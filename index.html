@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Gerador de Proposta Comercial</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    :root {
+      --primary: #004080;
+      --secondary: #0066cc;
+      --light: #f5f7fa;
+      --border: #d9d9d9;
+      --radius: 8px;
+    }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: var(--light);
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+    header {
+      background: var(--primary);
+      color: #fff;
+      padding: 25px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h1 {
+      font-size: 22px;
+      margin: 0;
+    }
+    header p {
+      font-size: 14px;
+      margin: 0;
+      opacity: 0.9;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 30px auto;
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    section {
+      padding: 25px 40px;
+      border-bottom: 1px solid var(--border);
+    }
+    h2 {
+      color: var(--primary);
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 5px;
+      margin-bottom: 15px;
+    }
+    .card {
+      background: var(--light);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 8px;
+      margin: 5px 0 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .btn {
+      display: inline-block;
+      background: var(--primary);
+      color: #fff;
+      padding: 12px 25px;
+      border-radius: var(--radius);
+      text-decoration: none;
+      font-weight: bold;
+      transition: background 0.3s;
+      cursor: pointer;
+      margin: 10px;
+    }
+    .btn:hover {
+      background: var(--secondary);
+    }
+    footer {
+      background: var(--primary);
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+      font-size: 14px;
+    }
+    #output {
+      margin-top: 30px;
+      padding: 20px;
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1><input id="prestador" value="Nobrutech"></h1>
+      <p>Serviços Gerenciados de TI</p>
+    </div>
+    <div>
+      <h1>Proposta Comercial</h1>
+      <p>MSP-2026-WR3121</p>
+    </div>
+  </header>
+
+  <div class="container">
+    <section>
+      <h2>Dados do Cliente</h2>
+      <div class="card">
+        <label>Razão Social:</label>
+        <input id="cliente" placeholder="Ex: Andre Luiz Souza dos Santos">
+        <label>CNPJ:</label>
+        <input id="cnpj" placeholder="Ex: 24.601.236/0001-41">
+        <label>Endereço:</label>
+        <input id="endereco" placeholder="Ex: R. Ananias Antero da Costa - Vila Zulmira - São João de Meriti - RJ">
+        <label>Local de Atendimento:</label>
+        <input id="local" placeholder="Ex: Barra da Tijuca - Rio de Janeiro - RJ">
+      </div>
+    </section>
+
+    <section>
+      <h2>Equipamentos</h2>
+      <div class="card">
+        <textarea id="equipamentos" rows="4" placeholder="Ex: 12 Notebooks, 1 Servidor, 2 Impressoras"></textarea>
+      </div>
+    </section>
+
+    <section>
+      <h2>SLA</h2>
+      <div class="card">
+        <textarea id="sla" rows="4" placeholder="Ex: <1h Resposta para chamados críticos, <4h Resolução alta prioridade, 99,9% Uptime"></textarea>
+      </div>
+    </section>
+
+    <section>
+      <h2>Valores</h2>
+      <div class="card">
+        <label>Mensalidade:</label>
+        <input id="mensalidade" placeholder="Ex: R$ 2.200,00/mês">
+        <label>Visita Técnica:</label>
+        <input id="visita" placeholder="Ex: R$ 300,00 até 2h">
+      </div>
+    </section>
+
+    <section style="text-align:center;">
+      <button class="btn" onclick="gerarProposta()">Gerar Proposta</button>
+      <button class="btn" onclick="exportarPDF()">Exportar PDF</button>
+    </section>
+  </div>
+
+  <div id="output"></div>
+
+  <footer>
+    <span id="footerPrestador">Nobrutech</span> - Serviços Gerenciados de TI | contato@nobrutech.com.br | (21) 98592-0429
+  </footer>
+
+  <script>
+    function gerarProposta() {
+      const prestador = document.getElementById('prestador').value;
+      const cliente = document.getElementById('cliente').value;
+      const cnpj = document.getElementById('cnpj').value;
+      const endereco = document.getElementById('endereco').value;
+      const local = document.getElementById('local').value;
+      const equipamentos = document.getElementById('equipamentos').value;
+      const sla = document.getElementById('sla').value;
+      const mensalidade = document.getElementById('mensalidade').value;
+      const visita = document.getElementById('visita').value;
+
+      document.getElementById('footerPrestador').innerText = prestador;
+
+      const proposta = `
+        <div id="propostaFinal" class="container">
+          <section>
+            <h2>Proposta Comercial - ${prestador}</h2>
+            <p><strong>Cliente:</strong> ${cliente}</p>
+            <p><strong>CNPJ:</strong> ${cnpj}</p>
+            <p><strong>Endereço:</strong> ${endereco}</p>
+            <p><strong>Local de Atendimento:</strong> ${local}</p>
+          </section>
+          <section>
+            <h2>Equipamentos</h2>
+            <p>${equipamentos}</p>
+          </section>
+          <section>
+            <h2>Acordo de Nível de Serviço (SLA)</h2>
+            <p>${sla}</p>
+          </section>
+          <section>
+            <h2>Investimento</h2>
+            <p><strong>Mensalidade:</strong> ${mensalidade}</p>
+            <p><strong>Visita Técnica:</strong> ${visita}</p>
+          </section>
+        </div>
+      `;
+      document.getElementById('output').innerHTML = proposta;
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+
+    async function exportarPDF() {
+      const { jsPDF } = window.jspdf;
+      const proposta = document.getElementById('propostaFinal');
+      if (!proposta) {
+        alert("Por favor, gere a proposta antes de exportar.");
+        return;
+      }
+      const canvas = await html2canvas(proposta);
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save('Proposta.pdf');
+    }
+  </script>
+</body>
+</html>
